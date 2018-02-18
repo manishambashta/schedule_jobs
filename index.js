@@ -1,5 +1,4 @@
 'use strict';
-
 class ScheduleJobs{
 
 	constructor(){
@@ -58,6 +57,12 @@ class ScheduleJobs{
 		});
 
 	}
+	
+	dbDisconnect(db,result){
+		console.log(result);
+		console.log("at the end of method dbDisconnect");
+		// db.close(); not working throwing error as no close method for db / need to check
+	}
 
 	insertDocuments(collectionName,singleDocument,callback){
 		console.log("trying to connect");
@@ -72,26 +77,25 @@ class ScheduleJobs{
 		});
 	}
 
-	// get db(){
-	// 	return this.dbConnect();
-	// }
-
-	dbDisconnect(db,result){
-		console.log(result);
-		console.log("at the end of method dbDisconnect");
-		// db.close(); not working throwing error as no close method for db / need to check
-	}
-
-
-
 }
 
-var jobs=new ScheduleJobs();
-// console.log(jobs.userData);
-// console.log(jobs.employeeData);
-// console.log(jobs.studentData);
-// console.log(jobs.dbConnect())
-// jobs.dbConnect();
-jobs.insertDocuments("users",jobs.userData,jobs.dbDisconnect)
-jobs.insertDocuments("employees",jobs.employeeData,jobs.dbDisconnect)
-jobs.insertDocuments("students",jobs.studentData,jobs.dbDisconnect)
+var cron = require('node-cron');
+
+cron.schedule('*/1 * * * *', function(){
+	var jobs=new ScheduleJobs();
+  	console.log('running a task every minute at 13');
+	jobs.insertDocuments("users",jobs.userData,jobs.dbDisconnect)
+
+});
+
+cron.schedule('*/2 * * * *', function(){
+	var jobs=new ScheduleJobs();
+  	console.log('running a task every minute at 37');
+	jobs.insertDocuments("employees",jobs.employeeData,jobs.dbDisconnect)
+});
+
+cron.schedule('*/3 * * * *', function(){
+	var jobs=new ScheduleJobs();
+  	console.log('running a task every minute at 59');
+	jobs.insertDocuments("students",jobs.studentData,jobs.dbDisconnect)
+});
