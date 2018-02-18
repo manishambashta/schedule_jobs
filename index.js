@@ -1,4 +1,4 @@
-use strict;
+'use strict';
 
 class ScheduleJobs{
 	constructor(){
@@ -12,6 +12,7 @@ class ScheduleJobs{
 	get userData(){
 
 		var user = {
+		  id: this.faker.random.uuid(),
 		  name: this.faker.name.findName(),
 		  email: this.faker.internet.email(),
 		  address: this.faker.address.streetAddress(),
@@ -22,8 +23,8 @@ class ScheduleJobs{
 	get employeeData(){
 
 		var employee = {
+		  id: this.faker.random.uuid(),
 		  name: this.faker.name.findName(),
-		  employeeId: this.faker.random.uuid(),
 		  salary: this.faker.finance.amount(),
 		  currency: this.faker.finance.currencyName(),
 		};
@@ -33,10 +34,10 @@ class ScheduleJobs{
 	get studentData(){
 
 		var student = {
+		  id: this.faker.random.uuid(),
 		  name: this.faker.name.findName(),
-		  studentId: this.faker.random.uuid(),
 		  email: this.faker.internet.email(),
-		  course: this.faker.lorem.name(),
+		  course: this.faker.lorem.word(),
 		};
 
 		return student;
@@ -49,3 +50,5 @@ class ScheduleJobs{
 
 var jobs=new ScheduleJobs();
 console.log(jobs.userData);
+console.log(jobs.employeeData);
+console.log(jobs.studentData);
