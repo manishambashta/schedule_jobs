@@ -6,9 +6,9 @@
 		.one-third{
 			width: 30%;
 			margin-right: 1.5%;
-			display: inline-block;
+			display: inline-table;
 		}
-		.one-third:last{
+		.one-third.students{
 			margin-right:0px;
 		}
 		.full-width{
@@ -70,7 +70,7 @@
 <div class="full-width">
 	
 	<!-- <div class="one-third"> -->
-		<ul class="users">
+		<ul class="users one-third">
 			<li class="heading">Users</li>
 			<% if(users) { %>
 				<% for(var i=0; i< users.length;i++) { %>
@@ -80,7 +80,7 @@
 		</ul>
 <!-- 	</div>	
 	<div class="one-third">
- -->		<ul class="employees">
+ -->		<ul class="employees one-third">
 			<li class="heading">Employees</li>
 			<% if(employees) { %>
 				<% for(var i=0; i< employees.length;i++) { %>
@@ -90,11 +90,11 @@
 		</ul>		
 <!-- 	</div>	
 	<div class="one-third">
- -->		<ul class="students">
+ -->		<ul class="students one-third">
 			<li class="heading">Students</li>
 			<% if(students) { %>
 				<% for(var i=0; i< students.length;i++) { %>
-				<li><div class="name"><%= students[i].name %></div><div class="email"><%= students[i].email %></div><div class="course"><%= students[i].course %></div></li>
+				<li><div class="name">Name : <%= students[i].name %></div><div class="email">Email : <%= students[i].email %></div><div class="course">Course : <%= students[i].course %></div></li>
 				<% } %>
 			<% } %>
 		</ul>
