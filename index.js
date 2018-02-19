@@ -44,85 +44,55 @@ class ScheduleJobs{
 	}
 
 	createServer(){
-		var http = require('http'),fs = require('fs');
+		var http = require('http'),fs = require('fs'),ejs=require('ejs'),thisobj = this;
 		return http.createServer(function(req,res){
 			res.writeHead(200,{'Content-type':'text/html'});
 			// read from mongodb and parse the result into html and then send html
 			var jobs = new ScheduleJobs();
 			console.log("trying to get data from mongodb");
-			
-			res.end(fs.readFileSync(__dirname + '/index.html'));
+			var users = thisobj.fetchDocuments("users");
+			var employees = thisobj.fetchDocuments("employees");
+			var students = thisobj.fetchDocuments("students");
+			console.log(users);
+			console.log("this is the users above");
+			ejs.renderFile('index.html',{"users":users,"employees":employees,"students":students},"",function(err,html){
+				res.end(html);
+			})
+			// res.end(fs.readFileSync(__dirname + '/index.html'));
 		}).listen(8080, function() {
 			console.log('Listening at: http://localhost:8080');
 		});
 	}
 
-	listenServer(socketio){
-		socketio.on('connection', function (socket) {
-		    socket.on('message', function (msg) {
-		        console.log('Message Received: ', msg);
-		        socket.broadcast.emit('message', msg);
-		    });
-		});		
-	}
+	// listenServer(socketio){
+	// 	socketio.on('connection', function (socket) {
+	// 	    socket.on('message', function (msg) {
+	// 	        console.log('Message Received: ', msg);
+	// 	        socket.broadcast.emit('message', msg);
+	// 	    });
+	// 	});		
+	// }
 
-	emitMessage(socketio,message){
-		socketio.sockets.volatile.emit('user', {
-		  user: "manish",
-		  text: "some text"
-		});
-	}
+	// emitMessage(socketio,message){
+	// 	socketio.sockets.volatile.emit('user', {
+	// 	  user: "manish",
+	// 	  text: "some text"
+	// 	});
+	// }
 
 	initServer(){
 		this.server = this.createServer();
 		this.socketio = require('socket.io').listen(this.server);
-		this.listenServer(this.socketio);		
+		// this.listenServer(this.socketio);		
 	}
 
-	fetchDocuments(callback){
+	fetchDocuments(collectionName){
 		console.log("fetch documents from mongodb");
-		this.dbConnect(function(db){
+		return this.dbConnect(function(db){
 			console.log("inside db connect method for fetching docs");
-			// var users = db.collection('users').find();
-			// users.each(function(err,item){
-			// 	if(item==null){
-			// 		return;
-			// 	}
-			// 	console.log(item);
-			// });
-			
-			// var employees = db.collection('employees').find();
-			// employees.each(function(err,item){
-			// 	if(item==null){
-			// 		return;
-			// 	}
-			// 	console.log(item);
-			// });
-
-			// var students = db.collection('students').find();
-			// students.each(function(err,item){
-			// 	if(item==null){
-			// 		return;
-			// 	}
-			// 	console.log(item);
-			// });
-
 			var assert = require('assert');
-			var users = db.collection('users').find().toArray(function(err, results) {
-				assert.equal(null, err);
-				console.log(results);
-			});
-			var employees = db.collection('employees').toArray(function(err, results) {
-				assert.equal(null, err);
-				console.log(results);
-
-			});
-			var students = db.collection('students').find().toArray(function(err, results) {
-				assert.equal(null, err);
-				console.log(results);
-			});
-			
-			callback({"users":users,"employees":employees,"students":students});
+			// callback(db.collection(collectionName).find().toArray());
+			return db.collection(collectionName).find().toArray();
 		});
 	}
 

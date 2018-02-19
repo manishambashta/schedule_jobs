@@ -51,6 +51,11 @@
 	<div class="one-third">
 		<ul class="users">
 			<li class="heading">Users</li>
+			<% if(users) {%>
+				<% for(var i=0; i< users.length;i++) { %>
+				<li><%= user.name %> : <%= user.email %> : <%= user.address %></li>
+				<% } %>
+			<% } %>
 		</ul>
 	</div>	
 	<div class="one-third">
