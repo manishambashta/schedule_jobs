@@ -142,13 +142,13 @@ cron.schedule('*/1 * * * *', function(){
 
 });
 
-cron.schedule('*/1 * * * *', function(){
+cron.schedule('*/2 * * * *', function(){
   	console.log('running a task every 2 minutes');
   	// console.log('running a task every minute at 37');
 	jobs.insertDocuments("employees",jobs.employeeData,jobs.socketio,jobs.emitData);
 });
 
-cron.schedule('*/1 * * * *', function(){
+cron.schedule('*/3 * * * *', function(){
   	console.log('running a task every 3 minutes');
   	// console.log('running a task every minute at 59');
 	jobs.insertDocuments("students",jobs.studentData,jobs.socketio,jobs.emitData);
