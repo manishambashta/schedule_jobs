@@ -43,6 +43,90 @@ class ScheduleJobs{
 		return student;
 	}
 
+	createServer(){
+		var http = require('http'),fs = require('fs');
+		return http.createServer(function(req,res){
+			res.writeHead(200,{'Content-type':'text/html'});
+			// read from mongodb and parse the result into html and then send html
+			var jobs = new ScheduleJobs();
+			console.log("trying to get data from mongodb");
+			
+			res.end(fs.readFileSync(__dirname + '/index.html'));
+		}).listen(8080, function() {
+			console.log('Listening at: http://localhost:8080');
+		});
+	}
+
+	listenServer(socketio){
+		socketio.on('connection', function (socket) {
+		    socket.on('message', function (msg) {
+		        console.log('Message Received: ', msg);
+		        socket.broadcast.emit('message', msg);
+		    });
+		});		
+	}
+
+	emitMessage(socketio,message){
+		socketio.sockets.volatile.emit('user', {
+		  user: "manish",
+		  text: "some text"
+		});
+	}
+
+	initServer(){
+		this.server = this.createServer();
+		this.socketio = require('socket.io').listen(this.server);
+		this.listenServer(this.socketio);		
+	}
+
+	fetchDocuments(callback){
+		console.log("fetch documents from mongodb");
+		this.dbConnect(function(db){
+			console.log("inside db connect method for fetching docs");
+			// var users = db.collection('users').find();
+			// users.each(function(err,item){
+			// 	if(item==null){
+			// 		return;
+			// 	}
+			// 	console.log(item);
+			// });
+			
+			// var employees = db.collection('employees').find();
+			// employees.each(function(err,item){
+			// 	if(item==null){
+			// 		return;
+			// 	}
+			// 	console.log(item);
+			// });
+
+			// var students = db.collection('students').find();
+			// students.each(function(err,item){
+			// 	if(item==null){
+			// 		return;
+			// 	}
+			// 	console.log(item);
+			// });
+
+			var assert = require('assert');
+			var users = db.collection('users').find().toArray(function(err, results) {
+				assert.equal(null, err);
+				console.log(results);
+			});
+			var employees = db.collection('employees').toArray(function(err, results) {
+				assert.equal(null, err);
+				console.log(results);
+
+			});
+			var students = db.collection('students').find().toArray(function(err, results) {
+				assert.equal(null, err);
+				console.log(results);
+			});
+			
+			callback({"users":users,"employees":employees,"students":students});
+		});
+	}
+
+
 	dbConnect(callback){
 		var assert = require('assert');
 		this.MongoClient = require('mongodb').MongoClient;
@@ -58,44 +142,53 @@ class ScheduleJobs{
 
 	}
 	
-	dbDisconnect(db,result){
+	dbDisconnect(db,collectionName,result,socketio){
+		// if(result.insertedCount>0){
+			console.log(result["ops"][0]);
+			socketio.sockets.volatile.emit(collectionName, result["ops"][0]);
+		// }
+
 		console.log(result);
 		console.log("at the end of method dbDisconnect");
 		// db.close(); not working throwing error as no close method for db / need to check
 	}
 
-	insertDocuments(collectionName,singleDocument,callback){
+	insertDocuments(collectionName,singleDocument,socketio,callback){
 		console.log("trying to connect");
 		this.dbConnect(function(db){
 			console.log("in db connect callback function");
 			var collection = db.collection(collectionName);
 			collection.insert(singleDocument,{w:1},function(err, result) {
 			    console.log("Inserted 1 document into "+collectionName+" collection");
-			    // console.log(result);
-		  		callback(db,result);
+		  		callback(db,collectionName,result,socketio);
 			  });
 		});
 	}
 
 }
 
+var jobs=new ScheduleJobs();
+jobs.initServer();
+// console.log(jobs.fetchDocuments());
+
 var cron = require('node-cron');
 
 cron.schedule('*/1 * * * *', function(){
-	var jobs=new ScheduleJobs();
-  	console.log('running a task every minute at 13');
-	jobs.insertDocuments("users",jobs.userData,jobs.dbDisconnect)
+  	console.log('running a task every 1 minute');
+  	// console.log('running a task every minute at 13');
+	jobs.insertDocuments("users",jobs.userData,jobs.socketio,jobs.dbDisconnect);
 
 });
 
 cron.schedule('*/2 * * * *', function(){
-	var jobs=new ScheduleJobs();
-  	console.log('running a task every minute at 37');
-	jobs.insertDocuments("employees",jobs.employeeData,jobs.dbDisconnect)
+  	console.log('running a task every 2 minutes');
+  	// console.log('running a task every minute at 37');
+	jobs.insertDocuments("employees",jobs.employeeData,jobs.socketio,jobs.dbDisconnect);
 });
 
 cron.schedule('*/3 * * * *', function(){
-	var jobs=new ScheduleJobs();
-  	console.log('running a task every minute at 59');
-	jobs.insertDocuments("students",jobs.studentData,jobs.dbDisconnect)
+  	console.log('running a task every 3 minutes');
+  	// console.log('running a task every minute at 59');
+	jobs.insertDocuments("students",jobs.studentData,jobs.socketio,jobs.dbDisconnect);
 });
+

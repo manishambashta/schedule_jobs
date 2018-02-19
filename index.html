@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Real Time Data with Websocket</title>
+	<style type="text/css">
+		.one-third{
+			width: 30%;
+			margin-right: 1.5%;
+			display: inline-block;
+		}
+		.one-third:last{
+			margin-right:0px;
+		}
+		.heading{
+			list-style: none;
+			font-weight: bolder;
+			text-align: center;
+			border-bottom: 1px solid #444; 
+		}
+	</style>
+	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
+	<script>
+	  var socket = io.connect();
+	  jQuery(function ($) {
+	    
+	    var userHeading= $('ul.users>li.heading');
+	    var employeeHeading= $('ul.employees>li.heading');
+	    var studentHeading= $('ul.students>li.heading');
+
+	    socket.on('users', function (data) {
+	    	console.log(data);
+	      userHeading
+	        .after('<li>' + data.name + ': ' + data.email + ': ' + data.address + '</li>');
+	    });
+	    socket.on('employees', function (data) {
+	    	console.log(data);
+	      employeeHeading
+	        .after('<li>' + data.name + ': ' + data.salary + ': ' + data.currency + '</li>');
+	    });
+	    socket.on('students', function (data) {
+	    	console.log(data);
+	      studentHeading
+	        .after('<li>' + data.name + ': ' + data.email + ': ' + data.course + '</li>');
+	    });
+
+	  });
+	</script>
+</head>
+<body>
+	<div class="one-third">
+		<ul class="users">
+			<li class="heading">Users</li>
+		</ul>
+	</div>	
+	<div class="one-third">
+		<ul class="employees">
+			<li class="heading">Employees</li>
+		</ul>		
+	</div>	
+	<div class="one-third">
+		<ul class="students">
+			<li class="heading">Students</li>
+		</ul>
+	</div>	
+
+</body>
+</html>
