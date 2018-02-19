@@ -11,73 +11,95 @@
 		.one-third:last{
 			margin-right:0px;
 		}
+		.full-width{
+			width:100%;
+		}
+		.users>li,.employees>li,.students>li{
+			border: 1px solid #238bd5;
+		    padding: 5px;
+		    list-style: none;
+			margin-bottom: 5px;
+		}
 		.heading{
 			list-style: none;
 			font-weight: bolder;
 			text-align: center;
-			border-bottom: 1px solid #444; 
+			border: 0px !important;
+			border-bottom: 1px solid #444 !important; 
+
 		}
+
 	</style>
 	<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script type="text/javascript" src="/socket.io/socket.io.js"></script>
 	<script>
 	  var socket = io.connect();
-	  jQuery(function ($) {
+	  $(function () {
 	    
 	    var userHeading= $('ul.users>li.heading');
 	    var employeeHeading= $('ul.employees>li.heading');
 	    var studentHeading= $('ul.students>li.heading');
 
+
 	    socket.on('users', function (data) {
-	    	console.log(data);
-	      userHeading
-	        .after('<li>' + data.name + ': ' + data.email + ': ' + data.address + '</li>');
+	    	// console.log(data);
+	    	if(data){
+		      userHeading
+		        .after('<li><div class="name">Name : ' + data.name + '</div><div class="email">Email : ' + data.email + '</div><div class="address">Address : ' + data.address + '</div></li>');	    		
+	    	}
 	    });
 	    socket.on('employees', function (data) {
-	    	console.log(data);
-	      employeeHeading
-	        .after('<li>' + data.name + ': ' + data.salary + ': ' + data.currency + '</li>');
+	    	// console.log(data);
+	    	if(data){
+		      employeeHeading
+		        .after('<li><div class="name">Name : ' + data.name + '</div><div class="salary">Salary : ' + data.salary + '</div><div class="currency">Currency :  ' + data.currency + '</div></li>');
+	    	}
 	    });
 	    socket.on('students', function (data) {
-	    	console.log(data);
-	      studentHeading
-	        .after('<li>' + data.name + ': ' + data.email + ': ' + data.course + '</li>');
+	    	// console.log(data);
+	    	if(data){
+		      studentHeading
+		        .after('<li><div class="name">Name : ' + data.name + '</div><div class="email">Email : ' + data.email + '</div><div class="course">Course : ' + data.course + '</div></li>');
+	    	}
 	    });
 
 	  });
 	</script>
 </head>
 <body>
-	<div class="one-third">
+<div class="full-width">
+	
+	<!-- <div class="one-third"> -->
 		<ul class="users">
 			<li class="heading">Users</li>
 			<% if(users) { %>
 				<% for(var i=0; i< users.length;i++) { %>
-				<li><%= users[i].name %> : <%= users[i].email %> : <%= users[i].address %></li>
+				<li><div class="name">Name : <%= users[i].name %></div><div class="email">Email : <%= users[i].email %></div><div class="address">Address : <%= users[i].address %></div></li>
 				<% } %>
 			<% } %>
 		</ul>
-	</div>	
+<!-- 	</div>	
 	<div class="one-third">
-		<ul class="employees">
+ -->		<ul class="employees">
 			<li class="heading">Employees</li>
 			<% if(employees) { %>
 				<% for(var i=0; i< employees.length;i++) { %>
-				<li><%= employees[i].name %> : <%= employees[i].salary %> : <%= employees[i].currency %></li>
+				<li><div class="name">Name : <%= employees[i].name %></div><div class="salary">Salary : <%= employees[i].salary %></div><div class="currency">Currency : <%= employees[i].currency %></li>
 				<% } %>
 			<% } %>
 		</ul>		
-	</div>	
+<!-- 	</div>	
 	<div class="one-third">
-		<ul class="students">
+ -->		<ul class="students">
 			<li class="heading">Students</li>
 			<% if(students) { %>
 				<% for(var i=0; i< students.length;i++) { %>
-				<li><%= students[i].name %> : <%= students[i].email %> : <%= students[i].course %></li>
+				<li><div class="name"><%= students[i].name %></div><div class="email"><%= students[i].email %></div><div class="course"><%= students[i].course %></div></li>
 				<% } %>
 			<% } %>
 		</ul>
-	</div>	
+	<!-- </div>	 -->
 
+</div>
 </body>
 </html>

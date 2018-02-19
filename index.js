@@ -44,48 +44,35 @@ class ScheduleJobs{
 	}
 
 	createServer(){
-		var http = require('http'),fs = require('fs'),ejs=require('ejs'),thisobj = this;
+		// load required modules, http =>server, ejs =>to combine data and template to generate html, take a reference to this for use in callback functions
+		var http = require('http'),ejs=require('ejs'),self = this;
+
+		console.log("creating an http server ....")
+		// return a new instance of http.Server.
 		return http.createServer(async function(req,res){
+			// send a response header to the request, 
 			res.writeHead(200,{'Content-type':'text/html'});
-			// read from mongodb and parse the result into html and then send html
-			// var jobs = new ScheduleJobs();
-			console.log("trying to get data from mongodb");
-			var [users,employees,students] = await Promise.all([thisobj.fetchDocuments("users"),thisobj.fetchDocuments("employees"),thisobj.fetchDocuments("students")])
-			// var users = await thisobj.fetchDocuments("users");
-			// var employees = await thisobj.fetchDocuments("employees");
-			// var students = await thisobj.fetchDocuments("students");
+			
+			// fetch data from database
+			var [users,employees,students] = await Promise.all([self.fetchDocuments("users"),self.fetchDocuments("employees"),self.fetchDocuments("students")])
+
+			// render index.html file using ejs to serve at http://localhost:8080
 			ejs.renderFile('index.html',{"users":users,"employees":employees,"students":students},"",function(err,html){
 				res.end(html);
 			})
-			// res.end(fs.readFileSync(__dirname + '/index.html'));
+
 		}).listen(8080, function() {
+			// server created and listening at 8080 port now
 			console.log('Listening at: http://localhost:8080');
 		});
 	}
 
-	// listenServer(socketio){
-	// 	socketio.on('connection', function (socket) {
-	// 	    socket.on('message', function (msg) {
-	// 	        console.log('Message Received: ', msg);
-	// 	        socket.broadcast.emit('message', msg);
-	// 	    });
-	// 	});		
-	// }
-
-	// emitMessage(socketio,message){
-	// 	socketio.sockets.volatile.emit('user', {
-	// 	  user: "manish",
-	// 	  text: "some text"
-	// 	});
-	// }
 
 	initServer(){
 		this.server = this.createServer();
 		this.socketio = require('socket.io').listen(this.server);
 		// this.listenServer(this.socketio);		
 	}
-
-	// var array = [users,employees,students].promise.all({})
 
 	async fetchDocuments(collectionName){
 		return new Promise((resolve, reject)=>{
@@ -118,24 +105,24 @@ class ScheduleJobs{
 
 	}
 	
-	dbDisconnect(db,collectionName,result,socketio){
+	emitData(db,collectionName,result,socketio){
 		// if(result.insertedCount>0){
 			console.log(result["ops"][0]);
 			socketio.sockets.volatile.emit(collectionName, result["ops"][0]);
 		// }
 
 		console.log(result);
-		console.log("at the end of method dbDisconnect");
+		console.log("at the end of method emitData");
 		// db.close(); not working throwing error as no close method for db / need to check
 	}
 
 	insertDocuments(collectionName,singleDocument,socketio,callback){
-		console.log("trying to connect");
+		console.log("connecting to db ...");
 		this.dbConnect(function(db){
-			console.log("in db connect callback function");
+			console.log("successfully connected to mongodb");
 			var collection = db.collection(collectionName);
 			collection.insert(singleDocument,{w:1},function(err, result) {
-			    console.log("Inserted 1 document into "+collectionName+" collection");
+			    console.log("-- Inserted 1 document into "+collectionName+" collection --");
 		  		callback(db,collectionName,result,socketio);
 			  });
 		});
@@ -145,26 +132,25 @@ class ScheduleJobs{
 
 var jobs=new ScheduleJobs();
 jobs.initServer();
-// console.log(jobs.fetchDocuments());
 
 var cron = require('node-cron');
 
 cron.schedule('*/1 * * * *', function(){
   	console.log('running a task every 1 minute');
   	// console.log('running a task every minute at 13');
-	jobs.insertDocuments("users",jobs.userData,jobs.socketio,jobs.dbDisconnect);
+	jobs.insertDocuments("users",jobs.userData,jobs.socketio,jobs.emitData);
 
 });
 
 cron.schedule('*/2 * * * *', function(){
   	console.log('running a task every 2 minutes');
   	// console.log('running a task every minute at 37');
-	jobs.insertDocuments("employees",jobs.employeeData,jobs.socketio,jobs.dbDisconnect);
+	jobs.insertDocuments("employees",jobs.employeeData,jobs.socketio,jobs.emitData);
 });
 
 cron.schedule('*/3 * * * *', function(){
   	console.log('running a task every 3 minutes');
   	// console.log('running a task every minute at 59');
-	jobs.insertDocuments("students",jobs.studentData,jobs.socketio,jobs.dbDisconnect);
+	jobs.insertDocuments("students",jobs.studentData,jobs.socketio,jobs.emitData);
 });
 
