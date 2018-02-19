@@ -50,9 +50,10 @@ class ScheduleJobs{
 			// read from mongodb and parse the result into html and then send html
 			// var jobs = new ScheduleJobs();
 			console.log("trying to get data from mongodb");
-			var users = await thisobj.fetchDocuments("users");
-			var employees = await thisobj.fetchDocuments("employees");
-			var students = await thisobj.fetchDocuments("students");
+			var [users,employees,students] = await Promise.all([thisobj.fetchDocuments("users"),thisobj.fetchDocuments("employees"),thisobj.fetchDocuments("students")])
+			// var users = await thisobj.fetchDocuments("users");
+			// var employees = await thisobj.fetchDocuments("employees");
+			// var students = await thisobj.fetchDocuments("students");
 			ejs.renderFile('index.html',{"users":users,"employees":employees,"students":students},"",function(err,html){
 				res.end(html);
 			})
