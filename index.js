@@ -43,6 +43,8 @@ class ScheduleJobs{
 		return student;
 	}
 
+
+	// create a server to host index.html file
 	createServer(){
 		// load required modules, http =>server, ejs =>to combine data and template to generate html, take a reference to this for use in callback functions
 		var http = require('http'),ejs=require('ejs'),self = this;
@@ -67,26 +69,24 @@ class ScheduleJobs{
 		});
 	}
 
-
+	// initialize HTTP server and initializing socket.io to listen at this server
 	initServer(){
 		this.server = this.createServer();
 		this.socketio = require('socket.io').listen(this.server);
-		// this.listenServer(this.socketio);		
 	}
 
 	async fetchDocuments(collectionName){
+		console.log("fetching documents from "+collectionName+" collection");
 		return new Promise((resolve, reject)=>{
 			this.dbConnect(function(db){
-				console.log("inside db connect method for fetching docs");
 				var assert = require('assert');
-				// callback(db.collection(collectionName).find().toArray());
-				db.collection(collectionName).find().toArray(function(err,items){
+				db.collection(collectionName).find().sort({"_id":-1}).toArray(function(err,items){
 					resolve(items);
 				});
 			});
 
 		});
-		// console.log("fetch documents from mongodb");
+
 	}
 
 
@@ -99,21 +99,18 @@ class ScheduleJobs{
 		  	console.log("Connected successfully to server");
 		  	const db = client.db("scheduleJobs");
 		  	callback(db);		 		 
-		  // console.log(db);
-		  // client.close();
 		});
 
 	}
 	
 	emitData(db,collectionName,result,socketio){
-		// if(result.insertedCount>0){
-			console.log(result["ops"][0]);
+		if(result["insertedCount"]>0){
+			console.log("emitting "+collectionName+" message using socketio ....");
 			socketio.sockets.volatile.emit(collectionName, result["ops"][0]);
-		// }
+		}
 
-		console.log(result);
-		console.log("at the end of method emitData");
-		// db.close(); not working throwing error as no close method for db / need to check
+		console.log("close db connection after emitting message");
+		// db.close(); //not working throwing error as no close method for db / need to check
 	}
 
 	insertDocuments(collectionName,singleDocument,socketio,callback){
@@ -142,13 +139,13 @@ cron.schedule('*/1 * * * *', function(){
 
 });
 
-cron.schedule('*/2 * * * *', function(){
+cron.schedule('*/1 * * * *', function(){
   	console.log('running a task every 2 minutes');
   	// console.log('running a task every minute at 37');
 	jobs.insertDocuments("employees",jobs.employeeData,jobs.socketio,jobs.emitData);
 });
 
-cron.schedule('*/3 * * * *', function(){
+cron.schedule('*/1 * * * *', function(){
   	console.log('running a task every 3 minutes');
   	// console.log('running a task every minute at 59');
 	jobs.insertDocuments("students",jobs.studentData,jobs.socketio,jobs.emitData);
