@@ -108,6 +108,9 @@ class ScheduleJobs{
 			console.log("emitting "+collectionName+" message using socketio ....");
 			socketio.sockets.volatile.emit(collectionName, result["ops"][0]);
 		}
+		else{
+			console.log("no data inserted");			
+		}
 
 		console.log("close db connection after emitting message");
 		// db.close(); //not working throwing error as no close method for db / need to check
