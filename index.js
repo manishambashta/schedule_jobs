@@ -43,6 +43,14 @@ class ScheduleJobs{
 		return student;
 	}
 
+	logError(errorMessage){
+		let fs = require("fs");
+		fs.writeFile("error.log", errorMessage, function(err) {
+		    if(err) {
+		        return console.log("Error in logging error : " + err);
+		    }
+		}); 
+	}
 
 	// create a server to host index.html file
 	createServer(){
@@ -66,20 +74,26 @@ class ScheduleJobs{
 		}).listen(8080, function() {
 			// server created and listening at 8080 port now
 			console.log('Listening at: http://localhost:8080');
+		}).on("error", function(e){
+			console.log("Error while creating server : "+e);
 		});
 	}
 
 
 	// connect to mongodb
 	dbConnect(callback){
-		let assert = require('assert');
 		this.MongoClient = require('mongodb').MongoClient;
 		this.uri = 'mongodb://localhost:27017';
 		this.MongoClient.connect(this.uri, function(err, client) {
-			assert.equal(null, err);
-		  	console.log("Connected successfully to server");
-		  	const db = client.db("scheduleJobs");
-		  	callback(db);		 		 
+			if(err){
+				console.log("Error while connecting to db");
+				callback(null);
+			}
+			else{
+			  	console.log("Connected successfully to server");
+			  	const db = client.db("scheduleJobs");
+			  	callback(db);		 		 
+			}
 		});
 
 	}
@@ -89,9 +103,14 @@ class ScheduleJobs{
 		console.log("fetching documents from "+collectionName+" collection");
 		return new Promise((resolve, reject)=>{
 			this.dbConnect(function(db){
-				db.collection(collectionName).find().sort({"_id":-1}).toArray(function(err,items){
-					resolve(items);
-				});
+				if(db){
+					db.collection(collectionName).find().sort({"_id":-1}).toArray(function(err,items){
+						resolve(items);
+					});
+				}
+				else{
+					console.log("Error in dbConnect while fetching documents");
+				}
 			});
 
 		});
@@ -103,12 +122,22 @@ class ScheduleJobs{
 	insertDocuments(collectionName,singleDocument,socketio,callback){
 		console.log("connecting to db ...");
 		this.dbConnect(function(db){
-			console.log("successfully connected to mongodb");
-			let collection = db.collection(collectionName);
-			collection.insert(singleDocument,{w:1},function(err, result) {
-			    console.log("-- Inserted 1 document into "+collectionName+" collection --");
-		  		callback(db,collectionName,result,socketio);
-			  });
+			if(db){
+				console.log("successfully connected to mongodb");
+				let collection = db.collection(collectionName);
+				collection.insert(singleDocument,{w:1},function(err, result) {
+					if(err){
+						console.log("Error while inserting document : "+err);
+					}
+					else{
+					    console.log("-- Inserted 1 document into "+collectionName+" collection --");
+				  		callback(db,collectionName,result,socketio);
+					}
+				  });
+			}
+			else{
+				console.log("Error in dbConnect while inserting document");
+			}
 		});
 	}
 
@@ -129,6 +158,11 @@ class ScheduleJobs{
 	// initialize HTTP server and initializing socket.io to listen at this server
 	initServer(){
 		this.server = this.createServer();
+		this.server.on('error', function (e) {
+		  // Handle your servererror here
+		  console.log(e);
+		});
+
 		this.socketio = require('socket.io').listen(this.server);
 	}
 
