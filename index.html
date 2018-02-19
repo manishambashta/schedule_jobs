@@ -51,9 +51,9 @@
 	<div class="one-third">
 		<ul class="users">
 			<li class="heading">Users</li>
-			<% if(users) {%>
+			<% if(users) { %>
 				<% for(var i=0; i< users.length;i++) { %>
-				<li><%= user.name %> : <%= user.email %> : <%= user.address %></li>
+				<li><%= users[i].name %> : <%= users[i].email %> : <%= users[i].address %></li>
 				<% } %>
 			<% } %>
 		</ul>
@@ -61,11 +61,21 @@
 	<div class="one-third">
 		<ul class="employees">
 			<li class="heading">Employees</li>
+			<% if(employees) { %>
+				<% for(var i=0; i< employees.length;i++) { %>
+				<li><%= employees[i].name %> : <%= employees[i].salary %> : <%= employees[i].currency %></li>
+				<% } %>
+			<% } %>
 		</ul>		
 	</div>	
 	<div class="one-third">
 		<ul class="students">
 			<li class="heading">Students</li>
+			<% if(students) { %>
+				<% for(var i=0; i< students.length;i++) { %>
+				<li><%= students[i].name %> : <%= students[i].email %> : <%= students[i].course %></li>
+				<% } %>
+			<% } %>
 		</ul>
 	</div>	
 

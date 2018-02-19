@@ -45,16 +45,14 @@ class ScheduleJobs{
 
 	createServer(){
 		var http = require('http'),fs = require('fs'),ejs=require('ejs'),thisobj = this;
-		return http.createServer(function(req,res){
+		return http.createServer(async function(req,res){
 			res.writeHead(200,{'Content-type':'text/html'});
 			// read from mongodb and parse the result into html and then send html
-			var jobs = new ScheduleJobs();
+			// var jobs = new ScheduleJobs();
 			console.log("trying to get data from mongodb");
-			var users = thisobj.fetchDocuments("users");
-			var employees = thisobj.fetchDocuments("employees");
-			var students = thisobj.fetchDocuments("students");
-			console.log(users);
-			console.log("this is the users above");
+			var users = await thisobj.fetchDocuments("users");
+			var employees = await thisobj.fetchDocuments("employees");
+			var students = await thisobj.fetchDocuments("students");
 			ejs.renderFile('index.html',{"users":users,"employees":employees,"students":students},"",function(err,html){
 				res.end(html);
 			})
@@ -86,14 +84,21 @@ class ScheduleJobs{
 		// this.listenServer(this.socketio);		
 	}
 
-	fetchDocuments(collectionName){
-		console.log("fetch documents from mongodb");
-		return this.dbConnect(function(db){
-			console.log("inside db connect method for fetching docs");
-			var assert = require('assert');
-			// callback(db.collection(collectionName).find().toArray());
-			return db.collection(collectionName).find().toArray();
+	// var array = [users,employees,students].promise.all({})
+
+	async fetchDocuments(collectionName){
+		return new Promise((resolve, reject)=>{
+			this.dbConnect(function(db){
+				console.log("inside db connect method for fetching docs");
+				var assert = require('assert');
+				// callback(db.collection(collectionName).find().toArray());
+				db.collection(collectionName).find().toArray(function(err,items){
+					resolve(items);
+				});
+			});
+
 		});
+		// console.log("fetch documents from mongodb");
 	}
 
 
